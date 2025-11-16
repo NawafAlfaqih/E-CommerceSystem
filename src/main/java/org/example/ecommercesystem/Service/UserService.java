@@ -1,11 +1,13 @@
 package org.example.ecommercesystem.Service;
 
+import lombok.RequiredArgsConstructor;
 import org.example.ecommercesystem.Model.User;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     ArrayList<User> users = new ArrayList<>();
