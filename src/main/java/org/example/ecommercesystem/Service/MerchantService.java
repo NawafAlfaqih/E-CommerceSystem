@@ -37,5 +37,4 @@ public class MerchantService {
         }
         return false;
     }
-
 }
