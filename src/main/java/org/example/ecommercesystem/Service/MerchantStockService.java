@@ -82,6 +82,44 @@ public class MerchantStockService {
         return false;
     }
 
+    public boolean checkLowInStock(MerchantStock merchantStock) {
+        return merchantStock.getStock() < 6 && merchantStock.getStock() > 0;
+    }
+
+    public boolean checkEmptyInStock(MerchantStock merchantStock) {
+        return merchantStock.getStock() <= 0;
+    }
+
+    public ArrayList<Product> getLowInStock() {
+        ArrayList<Product> products = new ArrayList<>();
+
+        for (MerchantStock m: merchantStocks) {
+            if (checkLowInStock(m)) {
+                for (Product p: productService.products)
+                    if (m.getProductID().equals(p.getID())) {
+                        products.add(p);
+                        break;
+                    }
+            }
+        }
+        return products;
+    }
+
+    public ArrayList<Product> getEmptyInStock() {
+        ArrayList<Product> products = new ArrayList<>();
+
+        for (MerchantStock m: merchantStocks) {
+            if (checkEmptyInStock(m)) {
+                for (Product p: productService.products)
+                    if (m.getProductID().equals(p.getID())) {
+                        products.add(p);
+                        break;
+                    }
+            }
+        }
+        return products;
+    }
+
     public boolean addStock(String merchantID, String productID, int stock) {
 
         for (MerchantStock m: merchantStocks) {

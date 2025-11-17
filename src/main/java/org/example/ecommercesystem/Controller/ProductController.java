@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+
 @RestController
 @RequestMapping("/api/v1/product")
 @RequiredArgsConstructor
@@ -41,7 +43,7 @@ public class ProductController {
             String message = errors.getFieldError().getDefaultMessage();
             return ResponseEntity.status(400).body(new ApiResponse(message));
         }
-        if (!productService.checkCategoryID(product)) {
+        if (!productService.checkCategoryID(product.getCategoryID())) {
             String message = "Product categoryID was not found (categoryID: " + product.getCategoryID() + ").";
             return ResponseEntity.status(404).body(new ApiResponse(message));
         }
@@ -61,5 +63,60 @@ public class ProductController {
         }
         String message = "Product was not found (ID: " + ID + ").";
         return ResponseEntity.status(404).body(new ApiResponse(message));
+    }
+
+    @GetMapping("/get/lowest-price/category/{categoryID}")
+    public ResponseEntity<?> getLowestProductsInPrice(@PathVariable String categoryID) {
+        if (!productService.checkCategoryID(categoryID)) {
+            String message = "Product categoryID was not found (categoryID: " + categoryID + ").";
+            return ResponseEntity.status(404).body(new ApiResponse(message));
+        }
+        return ResponseEntity.status(200).body(productService.getLowestProductsInPrice(categoryID));
+    }
+
+    @GetMapping("/get/highest-price/category/{categoryID}")
+    public ResponseEntity<?> getHighestProductsInPrice(@PathVariable String categoryID) {
+        if (!productService.checkCategoryID(categoryID)) {
+            String message = "Product categoryID was not found (categoryID: " + categoryID + ").";
+            return ResponseEntity.status(404).body(new ApiResponse(message));
+        }
+        return ResponseEntity.status(200).body(productService.getHighestProductsInPrice(categoryID));
+    }
+
+    @GetMapping("/get/in-range/{categoryID}/price/{min}/{max}")
+    public ResponseEntity<?> getProductsInPriceRange(@PathVariable String categoryID, @PathVariable double min, @PathVariable double max) {
+            if (!productService.checkCategoryID(categoryID)) {
+                String message = "Product categoryID was not found (categoryID: " + categoryID + ").";
+                return ResponseEntity.status(404).body(new ApiResponse(message));
+            }
+            ArrayList<Product> products = productService.getProductsInPriceRange(categoryID, min, max);
+            if (products.isEmpty()){
+                String message = "Products in range ('"+min+"', '"+max+"') was not found (categoryID: " + categoryID + ").";
+                return ResponseEntity.status(404).body(new ApiResponse(message));
+            }
+            return ResponseEntity.status(200).body(productService.getHighestProductsInPrice(categoryID));
+    }
+
+    @GetMapping("/get/avg-price/category/{categoryID}")
+    public ResponseEntity<?> getAvgPriceInCategory(@PathVariable String categoryID) {
+        if (!productService.checkCategoryID(categoryID)) {
+            String message = "Product categoryID was not found (categoryID: " + categoryID + ").";
+            return ResponseEntity.status(404).body(new ApiResponse(message));
+        }
+        String message = "The average price in this category is '"+productService.getAvgPriceInCategory(categoryID)+"' (categoryID: "+ categoryID +"),";
+        return ResponseEntity.status(200).body(new ApiResponse(message));
+    }
+
+    @GetMapping("/recommend/user/{userID}/category/{categoryID}")
+    public ResponseEntity<?> recommendProductsFromCategory(@PathVariable String userID, @PathVariable String categoryID) {
+        if(!productService.checkUserID(userID)) {
+            String message = "userID was not found (userID: " + userID + ").";
+            return ResponseEntity.status(404).body(new ApiResponse(message));
+        }
+        if (!productService.checkCategoryID(categoryID)) {
+            String message = "Product categoryID was not found (categoryID: " + categoryID + ").";
+            return ResponseEntity.status(404).body(new ApiResponse(message));
+        }
+        return ResponseEntity.status(200).body(productService.recommendProductsFromCategory(userID, categoryID));
     }
 }

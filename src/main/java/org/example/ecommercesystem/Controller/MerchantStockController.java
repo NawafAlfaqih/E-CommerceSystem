@@ -124,4 +124,14 @@ public class MerchantStockController {
         return ResponseEntity.status(404).body(new ApiResponse("Merchant stock not found."));
     }
 
+    @GetMapping("/get/low-stock")
+    public ResponseEntity<?> getLowInStock() {
+        return ResponseEntity.status(200).body(merchantStockService.getLowInStock());
+    }
+
+    @GetMapping("/get/empty-stock")
+    public ResponseEntity<?> getEmptyInStock() {
+        return ResponseEntity.status(200).body(merchantStockService.getEmptyInStock());
+    }
+
 }

@@ -39,5 +39,14 @@ public class UserService {
         }
         return false;
     }
+
+    public User getUserByID(String userID) {
+        for (User u: users) {
+            if (userID.equals(u.getID())){
+                return u;
+            }
+        }
+        return null;
+    }
     
 }
