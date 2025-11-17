@@ -15,15 +15,14 @@ public class MerchantStockService {
 
     private final ProductService productService;
     private final MerchantService merchantService;
+    private final UserService userService;
 
     public ArrayList<MerchantStock> getMerchantStocks() {
         return merchantStocks;
     }
 
     public void addMerchantStock(MerchantStock merchantStock) {
-        if(checkMerchantID(merchantStock) && checkProductID(merchantStock))  {
             merchantStocks.add(merchantStock);
-        }
     }
 
     public boolean updateMerchantStock(String ID, MerchantStock merchantStock) {
@@ -46,18 +45,67 @@ public class MerchantStockService {
         return false;
     }
 
-    public boolean checkProductID(MerchantStock merchantStock) { //helper Method for productID validation
+    public Product getProductByID(String productID) { //helper Method for productID validation and object search
         for (Product p: productService.products) {
-            if(merchantStock.getProductID().equals(p.getID())) {
+            if(productID.equals(p.getID())) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    public Merchant getMerchantByID(String merchantID) { //helper Method for merchantID validation and object search
+        for (Merchant m: merchantService.merchants) {
+            if(merchantID.equals(m.getID())) {
+                return m;
+            }
+        }
+        return null;
+    }
+
+    public User getUserByID(String userID) { //helper Method for userID validation and object search
+        for (User u: userService.users) {
+            if(userID.equals(u.getID())) {
+                return u;
+            }
+        }
+        return null;
+    }
+
+    public boolean checkStock(String merchantID, String productID) {
+        for (MerchantStock m: merchantStocks) {
+            if (m.getMerchantID().equals(merchantID) && m.getProductID().equals(productID)) {
+                if (m.getStock() > 0)
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean addStock(String merchantID, String productID, int stock) {
+
+        for (MerchantStock m: merchantStocks) {
+
+            if (m.getMerchantID().equals(merchantID) && m.getProductID().equals(productID)) {
+                m.setStock(m.getStock() + stock);
+
                 return true;
             }
         }
         return false;
     }
 
-    public boolean checkMerchantID(MerchantStock merchantStock) { //helper Method for merchantID validation
-        for (Merchant m: merchantService.merchants) {
-            if(merchantStock.getMerchantID().equals(m.getID())) {
+    public boolean buyProduct(String userID, String productID, String merchantID) {
+
+        User user = getUserByID(userID);
+        Product product = getProductByID(productID);
+
+        for (MerchantStock m : merchantStocks) {
+            if (m.getMerchantID().equals(merchantID) && m.getProductID().equals(productID)) {
+
+                user.setBalance(user.getBalance() - product.getPrice());
+                m.setStock(m.getStock() - 1);
+
                 return true;
             }
         }

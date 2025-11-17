@@ -13,7 +13,7 @@ public class Product {
 
     @NotBlank(message = "name cannot be empty")
     @Size(min = 4, message = "name must be at least '4' in length")
-    @Pattern(regexp = "^[a-zA-Z\s]+$", message = "name must only contain characters")
+    @Pattern(regexp = "^[0-9a-zA-Z\s]+$", message = "name must only contain characters and numbers")
     private String name;
 
     @NotNull(message = "price cannot be empty")

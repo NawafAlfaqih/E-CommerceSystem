@@ -1,14 +1,15 @@
 package org.example.ecommercesystem.Service;
 
-import org.example.ecommercesystem.Model.User;
+import lombok.RequiredArgsConstructor;
 import org.example.ecommercesystem.Model.User;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
-    
+
     ArrayList<User> users = new ArrayList<>();
 
     public ArrayList<User> getUsers() {
@@ -38,4 +39,5 @@ public class UserService {
         }
         return false;
     }
+    
 }

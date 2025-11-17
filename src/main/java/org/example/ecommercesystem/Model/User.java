@@ -18,7 +18,9 @@ public class User {
 
     @NotBlank(message = "password cannot be empty")
     @Size(min = 7, message = "password have to be more than '7' in length")
-    private String password; //Todo: Password validation
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{7,}$",
+            message = "password must be at least 7 characters and include: uppercase, lowercase, digit, and special character (@$!%*?&)")
+    private String password;
 
 
     @NotBlank(message = "email cannot be empty")
@@ -26,7 +28,7 @@ public class User {
     private String email;
 
     @NotBlank(message = "role cannot be empty")
-    @Pattern(regexp = "^(Admin|Customer)$") //Todo: Check 'role' meaning
+    @Pattern(regexp = "^(Admin|Customer)$", message = "role value must be 'Admin' or 'Customer' only")
     private String role;
 
     @NotNull(message = "balance cannot be empty")
