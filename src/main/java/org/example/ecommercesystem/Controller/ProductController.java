@@ -107,7 +107,7 @@ public class ProductController {
         return ResponseEntity.status(200).body(new ApiResponse(message));
     }
 
-    @GetMapping("/recommend/user/{userID}/category/{categoryID}")
+    @GetMapping("/recommend/user/{userID}/category/{categoryID}") //Todo: Test new Endpoints
     public ResponseEntity<?> recommendProductsFromCategory(@PathVariable String userID, @PathVariable String categoryID) {
         if(!productService.checkUserID(userID)) {
             String message = "userID was not found (userID: " + userID + ").";
