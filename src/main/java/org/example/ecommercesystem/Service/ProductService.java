@@ -114,4 +114,17 @@ public class ProductService {
 
         return products1;
     }
+
+    public ArrayList<Product> bestDealsFromCategories() {
+        ArrayList<Product> productsDeals = new ArrayList<>();
+        for (Category c: categoryService.categories){
+            Product p = products.get(0);
+            for (int i = 0; i < products.size(); i++) {
+                if (products.get(i).getPrice() < p.getPrice())
+                    p = products.get(i);
+            }
+            productsDeals.add(p);
+        }
+        return productsDeals;
+    }
 }
