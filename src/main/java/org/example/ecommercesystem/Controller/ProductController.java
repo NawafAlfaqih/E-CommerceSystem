@@ -85,6 +85,10 @@ public class ProductController {
 
     @GetMapping("/get/in-range/{categoryID}/price/{min}/{max}")
     public ResponseEntity<?> getProductsInPriceRange(@PathVariable String categoryID, @PathVariable double min, @PathVariable double max) {
+            if(min > max) {
+                String message = "Incorrect Range, Minimum is bigger than Maximum (min: '"+min+"', max: '"+max+"').";
+                return ResponseEntity.status(400).body(new ApiResponse(message));
+            }
             if (!productService.checkCategoryID(categoryID)) {
                 String message = "Product categoryID was not found (categoryID: " + categoryID + ").";
                 return ResponseEntity.status(404).body(new ApiResponse(message));
