@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+
 @RestController
 @RequestMapping("/api/v1/merchant-stock")
 @RequiredArgsConstructor
@@ -126,12 +128,35 @@ public class MerchantStockController {
 
     @GetMapping("/get/low-stock")
     public ResponseEntity<?> getLowInStock() {
-        return ResponseEntity.status(200).body(merchantStockService.getLowInStock());
+        ArrayList<Product> products = merchantStockService.getLowInStock();
+        if (products.isEmpty()) {
+            String message = "No Products are low in stock.";
+            return ResponseEntity.status(404).body(new ApiResponse(message));
+        }
+        return ResponseEntity.status(200).body(products);
     }
 
     @GetMapping("/get/empty-stock")
     public ResponseEntity<?> getEmptyInStock() {
-        return ResponseEntity.status(200).body(merchantStockService.getEmptyInStock());
+        ArrayList<Product> products = merchantStockService.getEmptyInStock();
+        if (products.isEmpty()) {
+            String message = "No Products have empty stock.";
+            return ResponseEntity.status(404).body(new ApiResponse(message));
+        }
+        return ResponseEntity.status(200).body(products);
     }
 
+    @GetMapping("/get/best-merchant/product/{productID}")
+    public ResponseEntity<?> getBestMerchant(@PathVariable String productID) {
+        if (merchantStockService.getProductByID(productID) == null) {
+            String message = "Product was not found (productID: " + productID + ").";
+            return ResponseEntity.status(404).body(new ApiResponse(message));
+        }
+        Merchant merchant = merchantStockService.getBestMerchantForProduct(productID);
+        if (merchant == null) {
+            String message = "No merchant is selling this product with available stock (productID: " + productID + ").";
+            return ResponseEntity.status(404).body(new ApiResponse(message));
+        }
+        return ResponseEntity.status(200).body(merchant);
+    }
 }

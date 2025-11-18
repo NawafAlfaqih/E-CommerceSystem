@@ -120,6 +120,23 @@ public class MerchantStockService {
         return products;
     }
 
+    public Merchant getBestMerchantForProduct(String productID) {
+        Merchant bestMerchant = null;
+        int highestStock = -1;
+
+        for (MerchantStock m : merchantStocks) {
+            if (productID.equals(m.getProductID())) {
+
+                if (m.getStock() > highestStock) {
+                    highestStock = m.getStock();
+                    bestMerchant = getMerchantByID(m.getMerchantID());
+                }
+            }
+        }
+        return bestMerchant;
+    }
+
+
     public boolean addStock(String merchantID, String productID, int stock) {
 
         for (MerchantStock m: merchantStocks) {

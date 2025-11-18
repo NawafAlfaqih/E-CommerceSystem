@@ -68,6 +68,15 @@ public class ProductService {
         return false;
     }
 
+    public Product getProductByID(String productID) {
+        for (Product p: products) {
+            if (productID.equals(p.getID())){
+                return p;
+            }
+        }
+        return null;
+    }
+
     public ArrayList<Product> getLowestProductsInPrice(String categoryID) {
         ArrayList<Product> products1 = new ArrayList<>(products);
         products1.removeIf(p -> !categoryID.equals(p.getCategoryID()));
@@ -90,24 +99,35 @@ public class ProductService {
     }
 
     public double getAvgPriceInCategory(String categoryID) {
+        double sum = 0;
+        int count = 0;
 
-        double avg = 0;
-        for (Product p: products){
-            avg += p.getPrice();
+        for (Product p : products) {
+            if (categoryID.equals(p.getCategoryID())) {
+                sum += p.getPrice();
+                count++;
+            }
         }
-        return avg;
+        if (count == 0) {
+            return 0;
+        }
+        return sum / count;
     }
+
 
     public ArrayList<Product> recommendProductsFromCategory(String userID, String categoryID) {
 
         double balance = userService.getUserByID(userID).getBalance();
+        double avg = getAvgPriceInCategory(categoryID);
+
         ArrayList<Product> products1 = new ArrayList<>(products);
         products1.removeIf(p -> !categoryID.equals(p.getCategoryID()));
 
-        if (balance > 1000){
-            products1.removeIf(p -> p.getPrice() > balance || p.getPrice() < getAvgPriceInCategory(categoryID));
+        if (balance > 1000) {
+            products1.removeIf(p -> p.getPrice() > balance || p.getPrice() < avg);
         } else if (balance > 200) {
-            products1.removeIf(p -> p.getPrice() > balance || p.getPrice() < (getAvgPriceInCategory(categoryID)/ 1.2));
+            double lessThanAvg = avg / 1.2;
+            products1.removeIf(p -> p.getPrice() > balance || p.getPrice() < lessThanAvg);
         } else {
             products1.removeIf(p -> p.getPrice() > balance);
         }
@@ -115,16 +135,23 @@ public class ProductService {
         return products1;
     }
 
+
     public ArrayList<Product> bestDealsFromCategories() {
-        ArrayList<Product> productsDeals = new ArrayList<>();
-        for (Category c: categoryService.categories){
-            Product p = products.get(0);
-            for (int i = 0; i < products.size(); i++) {
-                if (products.get(i).getPrice() < p.getPrice())
-                    p = products.get(i);
+
+        ArrayList<Product> deals = new ArrayList<>();
+        for (Category c : categoryService.categories) {
+
+            Product best = null;
+            for (Product p : products) {
+                if (!c.getID().equals(p.getCategoryID()))
+                    continue;
+                if (best == null || p.getPrice() < best.getPrice())
+                    best = p;
             }
-            productsDeals.add(p);
+            if (best != null)
+                deals.add(best);
         }
-        return productsDeals;
+        return deals;
     }
+
 }

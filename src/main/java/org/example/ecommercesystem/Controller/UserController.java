@@ -42,7 +42,7 @@ public class UserController {
             String message = "User updated successfully (ID: " + user.getID() + ").";
             return ResponseEntity.status(200).body(new ApiResponse(message));
         }
-        String message = "User was not found (ID: " + user.getID() + ").";
+        String message = "User was not found (ID: " + ID + ").";
         return ResponseEntity.status(404).body(new ApiResponse(message));
     }
 
@@ -54,35 +54,5 @@ public class UserController {
         }
         String message = "User was not found (ID: " + ID + ").";
         return ResponseEntity.status(404).body(new ApiResponse(message));
-    }
-
-    @GetMapping("/get/otp/email/{email}")
-    public ResponseEntity<?> generateOTP(@PathVariable String email) {
-        String OTP = userService.generateOTP(email);
-        if (OTP.isBlank()) {
-            String message = "User was not found (email: " + email + ").";
-            return ResponseEntity.status(404).body(new ApiResponse(message));
-        }
-        String message = "OTP for password reset issued successfully (OTP: " + OTP + ").";
-        return ResponseEntity.status(200).body(new ApiResponse(message));
-    }
-
-    @PutMapping("/reset/otp/{OTP}/password/{password}")
-    public ResponseEntity<?> resetPassword(@PathVariable String OTP, @PathVariable String password) {
-        String message = "";
-        switch (userService.resetPassword(OTP, password)) {
-            case -1:
-                message = "OTP was not correct (OTP: " + OTP + ").";
-                return ResponseEntity.status(404).body(new ApiResponse(message));
-            case -2:
-                message = "provided password is the same as the old one.";
-                return ResponseEntity.status(404).body(new ApiResponse(message));
-            case -3:
-                message = "password must be at least 7 characters and include: uppercase, lowercase, digit, and special character (@$!%*?&)";
-                return ResponseEntity.status(404).body(new ApiResponse(message));
-            default:
-                message = "password reset is successful (OTP: " + OTP + ").";
-                return ResponseEntity.status(200).body(new ApiResponse(message));
-        }
     }
 }

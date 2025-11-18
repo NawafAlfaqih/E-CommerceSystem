@@ -94,7 +94,7 @@ public class ProductController {
                 String message = "Products in range ('"+min+"', '"+max+"') was not found (categoryID: " + categoryID + ").";
                 return ResponseEntity.status(404).body(new ApiResponse(message));
             }
-            return ResponseEntity.status(200).body(productService.getHighestProductsInPrice(categoryID));
+            return ResponseEntity.status(200).body(products);
     }
 
     @GetMapping("/get/avg-price/category/{categoryID}")
@@ -107,7 +107,7 @@ public class ProductController {
         return ResponseEntity.status(200).body(new ApiResponse(message));
     }
 
-    @GetMapping("/recommend/user/{userID}/category/{categoryID}") //Todo: Test new Endpoints
+    @GetMapping("/recommend/user/{userID}/category/{categoryID}")
     public ResponseEntity<?> recommendProductsFromCategory(@PathVariable String userID, @PathVariable String categoryID) {
         if(!productService.checkUserID(userID)) {
             String message = "userID was not found (userID: " + userID + ").";
@@ -118,5 +118,15 @@ public class ProductController {
             return ResponseEntity.status(404).body(new ApiResponse(message));
         }
         return ResponseEntity.status(200).body(productService.recommendProductsFromCategory(userID, categoryID));
+    }
+
+    @GetMapping("/best-deals")
+    public ResponseEntity<?> bestDealsFromCategories() {
+        ArrayList<Product> products = productService.bestDealsFromCategories();
+        if (products.isEmpty()) {
+            String message = "No Best Deals to be shown.";
+            return ResponseEntity.status(404).body(new ApiResponse(message));
+        }
+        return ResponseEntity.status(200).body(products);
     }
 }

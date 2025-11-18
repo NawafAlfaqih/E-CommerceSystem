@@ -1,6 +1,7 @@
 package org.example.ecommercesystem.Service;
 
 import org.example.ecommercesystem.Model.Merchant;
+import org.example.ecommercesystem.Model.Product;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -36,5 +37,14 @@ public class MerchantService {
             }
         }
         return false;
+    }
+
+    public Merchant getMerchantByID(String merchantID) {
+        for (Merchant m: merchants) {
+            if (merchantID.equals(m.getID())){
+                return m;
+            }
+        }
+        return null;
     }
 }
