@@ -90,7 +90,7 @@ public class MerchantStockService {
         return merchantStock.getStock() <= 0;
     }
 
-    public ArrayList<Product> getLowInStock() {
+    public ArrayList<Product> getLowInStock(String categoryID) {
         ArrayList<Product> products = new ArrayList<>();
 
         for (MerchantStock m: merchantStocks) {
@@ -102,10 +102,11 @@ public class MerchantStockService {
                     }
             }
         }
+        products.removeIf(p -> !categoryID.equals(p.getCategoryID()));
         return products;
     }
 
-    public ArrayList<Product> getEmptyInStock() {
+    public ArrayList<Product> getEmptyInStock(String categoryID) {
         ArrayList<Product> products = new ArrayList<>();
 
         for (MerchantStock m: merchantStocks) {
@@ -117,6 +118,7 @@ public class MerchantStockService {
                     }
             }
         }
+        products.removeIf(p -> !categoryID.equals(p.getCategoryID()));
         return products;
     }
 
@@ -137,23 +139,47 @@ public class MerchantStockService {
     }
 
 
-    public boolean addStock(String merchantID, String productID, int stock) {
+    public int addStock(String merchantID, String productID, int stock) {
+
+        if (stock <= 0)
+            return -1;
+
+        Product product = getProductByID(productID);
+        if (product == null)
+            return -2;
+
+        if (getMerchantByID(merchantID) == null)
+            return -3;
 
         for (MerchantStock m: merchantStocks) {
 
             if (m.getMerchantID().equals(merchantID) && m.getProductID().equals(productID)) {
                 m.setStock(m.getStock() + stock);
 
-                return true;
+                return 1;
             }
         }
-        return false;
+        return -4;
     }
 
-    public boolean buyProduct(String userID, String productID, String merchantID) {
+    public int buyProduct(String userID, String productID, String merchantID) {
 
         User user = getUserByID(userID);
+        if (user == null)
+            return -1;
+
         Product product = getProductByID(productID);
+        if (product == null)
+            return -2;
+
+        if (getMerchantByID(merchantID) == null)
+            return -3;
+
+        if (user.getBalance() < product.getPrice())
+            return -4;
+
+        if (!checkStock(merchantID, productID))
+            return -5;
 
         for (MerchantStock m : merchantStocks) {
             if (m.getMerchantID().equals(merchantID) && m.getProductID().equals(productID)) {
@@ -161,9 +187,9 @@ public class MerchantStockService {
                 user.setBalance(user.getBalance() - product.getPrice());
                 m.setStock(m.getStock() - 1);
 
-                return true;
+                return 1;
             }
         }
-        return false;
+        return -6;
     }
 }

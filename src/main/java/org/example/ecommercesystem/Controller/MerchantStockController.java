@@ -32,13 +32,11 @@ public class MerchantStockController {
             String message = errors.getFieldError().getDefaultMessage();
             return ResponseEntity.status(400).body(new ApiResponse(message));
         }
-        Product product = merchantStockService.getProductByID(merchantStock.getProductID());
-        if (product == null)
+        if (merchantStockService.getProductByID(merchantStock.getProductID()) == null)
             return ResponseEntity.status(404).body(
                     new ApiResponse("Merchant Stock 'productID' was not found (productID: " + merchantStock.getProductID() + ")."));
 
-        Merchant merchant = merchantStockService.getMerchantByID(merchantStock.getMerchantID());
-        if (merchant == null)
+        if (merchantStockService.getMerchantByID(merchantStock.getMerchantID()) == null)
             return ResponseEntity.status(404).body(
                     new ApiResponse("Merchant Stock 'merchantID' was not found (merchantID: " + merchantStock.getMerchantID() + ")."));
 
@@ -53,13 +51,11 @@ public class MerchantStockController {
             String message = errors.getFieldError().getDefaultMessage();
             return ResponseEntity.status(400).body(new ApiResponse(message));
         }
-        Product product = merchantStockService.getProductByID(merchantStock.getProductID());
-        if (product == null)
+        if (merchantStockService.getProductByID(merchantStock.getProductID()) == null)
             return ResponseEntity.status(404).body(
                     new ApiResponse("Merchant Stock 'productID' was not found (productID: " + merchantStock.getProductID() + ")."));
 
-        Merchant merchant = merchantStockService.getMerchantByID(merchantStock.getMerchantID());
-        if (merchant == null)
+        if (merchantStockService.getMerchantByID(merchantStock.getMerchantID()) == null)
             return ResponseEntity.status(404).body(
                     new ApiResponse("Merchant Stock 'merchantID' was not found (merchantID: " + merchantStock.getMerchantID() + ")."));
 
@@ -83,64 +79,55 @@ public class MerchantStockController {
 
     @PutMapping("/update/stock/{stock}/{merchantID}/{productID}")
     public ResponseEntity<?> addStock(@PathVariable String merchantID, @PathVariable String productID, @PathVariable int stock) {
-        if (stock <= 0)
-            return ResponseEntity.status(400).body(new ApiResponse("Stock must be more than '0' (stock: " + stock + ")."));
-
-        Product product = merchantStockService.getProductByID(productID);
-        if (product == null)
-            return ResponseEntity.status(404).body(new ApiResponse("Merchant Stock 'productID' was not found (productID: " + productID + ")."));
-
-        Merchant merchant = merchantStockService.getMerchantByID(merchantID);
-        if (merchant == null)
-            return ResponseEntity.status(404).body(new ApiResponse("Merchant Stock 'merchantID' was not found (merchantID: " + merchantID + ")."));
-
-        if (merchantStockService.addStock(merchantID, productID, stock))
-            return ResponseEntity.status(200).body(new ApiResponse("Stock of '"+stock+"' added successfully (pID: " + productID + ", mID: " + merchantID + ")."));
-
-        return ResponseEntity.status(404).body(new ApiResponse("Merchant Stock was not found (pID: " + productID + ", mID: " + merchantID + ")."));
+        return switch (merchantStockService.addStock(merchantID, productID, stock)) {
+            case -1 ->
+                    ResponseEntity.status(400).body(new ApiResponse("Stock must be more than '0' (stock: " + stock + ")."));
+            case -2 ->
+                    ResponseEntity.status(404).body(new ApiResponse("Product not found (productID: " + productID + ")."));
+            case -3 ->
+                    ResponseEntity.status(404).body(new ApiResponse("Merchant not found (merchantID: " + merchantID + ")."));
+            case -4 ->
+                    ResponseEntity.status(404).body(new ApiResponse("Merchant Stock was not found (pID: " + productID + ", mID: " + merchantID + ")."));
+            default ->
+                    ResponseEntity.status(200).body(new ApiResponse("Stock of '"+stock+"' added successfully (pID: " + productID + ", mID: " + merchantID + ")."));
+        };
     }
 
     @PutMapping("/buy/{userID}/{merchantID}/{productID}")
     public ResponseEntity<?> buyProduct(@PathVariable String userID, @PathVariable String productID, @PathVariable String merchantID) {
-        User user = merchantStockService.getUserByID(userID);
-        if (user == null)
-            return ResponseEntity.status(404).body(new ApiResponse("User not found (userID: " + userID + ")."));
-
-        Product product = merchantStockService.getProductByID(productID);
-        if (product == null)
-            return ResponseEntity.status(404).body(new ApiResponse("Product not found (productID: " + productID + ")."));
-
-        Merchant merchant = merchantStockService.getMerchantByID(merchantID);
-        if (merchant == null)
-            return ResponseEntity.status(404).body(new ApiResponse("Merchant not found (merchantID: " + merchantID + ")."));
-
-        if (user.getBalance() < product.getPrice())
-            return ResponseEntity.status(400).body(new ApiResponse("Insufficient balance (balance: " + user.getBalance() + ")."));
-
-        if (!merchantStockService.checkStock(merchantID, productID))
-            return ResponseEntity.status(400).body(new ApiResponse("Stock is insufficient."));
-
-        if (merchantStockService.buyProduct(userID, productID, merchantID))
-            return ResponseEntity.ok(new ApiResponse("Product bought successfully."));
-
-        return ResponseEntity.status(404).body(new ApiResponse("Merchant stock not found."));
+        return switch (merchantStockService.buyProduct(userID, productID, merchantID)) {
+            case -1 ->
+                    ResponseEntity.status(404).body(new ApiResponse("User not found (userID: " + userID + ")."));
+            case -2 ->
+                    ResponseEntity.status(404).body(new ApiResponse("Product not found (productID: " + productID + ")."));
+            case -3 ->
+                    ResponseEntity.status(404).body(new ApiResponse("Merchant not found (merchantID: " + merchantID + ")."));
+            case -4 ->
+                    ResponseEntity.status(400).body(new ApiResponse("Insufficient balance (balance: " + merchantStockService.getUserByID(userID).getBalance() + ")."));
+            case -5 ->
+                    ResponseEntity.status(400).body(new ApiResponse("Stock is insufficient."));
+            case -6 ->
+                    ResponseEntity.status(404).body(new ApiResponse("Merchant stock not found."));
+            default ->
+                    ResponseEntity.status(200).body(new ApiResponse("Product bought successfully."));
+        };
     }
 
-    @GetMapping("/get/low-stock")
-    public ResponseEntity<?> getLowInStock() {
-        ArrayList<Product> products = merchantStockService.getLowInStock();
+    @GetMapping("/get/low-stock/{categoryID}")
+    public ResponseEntity<?> getLowInStock(@PathVariable String categoryID) {
+        ArrayList<Product> products = merchantStockService.getLowInStock(categoryID);
         if (products.isEmpty()) {
-            String message = "No Products are low in stock.";
+            String message = "No Products are low in stock in given category (categoryID: " + categoryID + ").";
             return ResponseEntity.status(404).body(new ApiResponse(message));
         }
         return ResponseEntity.status(200).body(products);
     }
 
-    @GetMapping("/get/empty-stock")
-    public ResponseEntity<?> getEmptyInStock() {
-        ArrayList<Product> products = merchantStockService.getEmptyInStock();
+    @GetMapping("/get/empty-stock/{categoryID}")
+    public ResponseEntity<?> getEmptyInStock(@PathVariable String categoryID) {
+        ArrayList<Product> products = merchantStockService.getEmptyInStock(categoryID);
         if (products.isEmpty()) {
-            String message = "No Products have empty stock.";
+            String message = "No Products have empty stock in given category (categoryID: " + categoryID + ").";
             return ResponseEntity.status(404).body(new ApiResponse(message));
         }
         return ResponseEntity.status(200).body(products);
@@ -152,11 +139,10 @@ public class MerchantStockController {
             String message = "Product was not found (productID: " + productID + ").";
             return ResponseEntity.status(404).body(new ApiResponse(message));
         }
-        Merchant merchant = merchantStockService.getBestMerchantForProduct(productID);
-        if (merchant == null) {
+        if (merchantStockService.getBestMerchantForProduct(productID) == null) {
             String message = "No merchant is selling this product with available stock (productID: " + productID + ").";
             return ResponseEntity.status(404).body(new ApiResponse(message));
         }
-        return ResponseEntity.status(200).body(merchant);
+        return ResponseEntity.status(200).body(merchantStockService.getBestMerchantForProduct(productID));
     }
 }
